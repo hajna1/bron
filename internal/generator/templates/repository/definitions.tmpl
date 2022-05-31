@@ -1,0 +1,37 @@
+{{define "definitions"}}
+package repostory
+
+import (
+"context"
+"fmt"
+"time"
+
+"github.com/jmoiron/sqlx"
+sq "github.com/Masterminds/squirrel"
+
+"{{.PackageName}}/internal/{{.OriginName}}/{{.ModelDirectory}}"
+)
+
+const (
+{{.ConstName}} = "{{.OriginName}}"
+)
+
+const (
+{{.ID.ConstName}} = "{{.ID.OriginName}}"
+{{- with .Columns }}
+    {{ range . }}
+        {{- .ConstName}} = "{{.OriginName}}"
+    {{ end }}
+{{- end }}
+{{- if .CreatedAt}}
+    {{.CreatedAt.ConstName}} = "{{.CreatedAt.OriginName}}"
+{{- end}}
+{{- if .UpdatedAt}}
+{{.UpdatedAt.ConstName}} = "{{.UpdatedAt.OriginName}}"
+{{- end}}
+)
+
+type {{.GoName}}Repository struct {
+dbx              *sqlx.DB
+}
+{{end}}

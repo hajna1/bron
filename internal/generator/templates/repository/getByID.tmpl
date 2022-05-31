@@ -1,0 +1,32 @@
+{{define "getByID"}}
+    func (r *{{.GoName}}Repository) GetByID(ctx context.Context, id int64) ({{.ModelType}}, error){
+    builder := sq.Select(
+    {{.ID.ConstName}},
+    {{- with .Columns }}
+        {{ range . }}
+            {{- .ConstName}},
+        {{ end }}
+    {{- end }}
+        {{- if .CreatedAt}}
+            {{.CreatedAt.ConstName}},
+        {{- end}}
+    {{- if .UpdatedAt}}
+        {{.UpdatedAt.ConstName}},
+    {{- end}}
+
+    ).
+    From({{.ConstName}}).
+    Where(sq.Eq{ {{.ID.ConstName}}: id}).
+    PlaceholderFormat(sq.Dollar)
+    query, args, err := builder.ToSql()
+    if err != nil {
+    return {{.ModelType}}{}, err
+    }
+    var result {{.ModelType}}
+    if err := r.dbx.GetContext(ctx, &result, query, args...); err != nil {
+    return result, err
+    }
+
+    return result, nil
+    }
+{{end}}

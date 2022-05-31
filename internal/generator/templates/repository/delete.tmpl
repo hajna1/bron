@@ -1,0 +1,28 @@
+{{define "delete"}}
+    func (r *{{.GoName}}Repository) Delete(ctx context.Context, id int64) error{
+    builder := sq.Delete({{.ConstName}}).
+    Where({{.ID.ConstName}}, id).
+    PlaceholderFormat(sq.Dollar)
+    query, args, err := builder.ToSql()
+    if err != nil {
+    return err
+    }
+    res, err := r.dbx.ExecContext(
+    ctx,
+    query,
+    args...,
+    )
+    if err != nil {
+    return err
+    }
+
+    ra, err := res.RowsAffected()
+    if err != nil {
+    return err
+    }
+    if ra == 0 {
+    return fmt.Errorf("does not exist")
+    }
+    return nil
+    }
+{{end}}

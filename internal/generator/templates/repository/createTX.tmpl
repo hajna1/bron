@@ -1,0 +1,38 @@
+{{define "createTX"}}
+    func (r *{{.GoName}}Repository) CreateTX(ctx context.Context, tx *sqlx.Tx, p {{.ModelType}}) (int64, error) {
+    builder := sq.Insert({{.ConstName}}).
+    Columns(
+    {{- with .Columns }}
+        {{ range . }}
+            {{- .ConstName}},
+        {{ end }}
+    {{- end }}
+    ).
+    Values(
+    {{- with .Columns }}
+        {{ range . }}p.{{.GoName}},
+        {{ end }}
+    {{- end }}
+    ).
+    Suffix(fmt.Sprintf("returning %s", {{.ConstName}})).
+    PlaceholderFormat(sq.Dollar)
+
+    query, args, err := builder.ToSql()
+    if err != nil {
+    return 0, err
+    }
+
+    var ID {{.ID.GoType}}
+
+    if err := tx.GetContext(
+    ctx,
+    &ID,
+    query,
+    args...,
+    ); err != nil {
+    return 0, err
+    }
+
+    return ID, nil
+    }
+{{end}}

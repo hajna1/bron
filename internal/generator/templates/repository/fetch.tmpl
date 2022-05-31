@@ -1,0 +1,37 @@
+{{define "fetch"}}
+    func (r *{{.GoName}}Repository) Fetch(ctx context.Context, offset, limit int64) ([]{{.ModelType}}, error) {
+    builder := sq.Select(
+    {{.ID.ConstName}},
+    {{- with .Columns }}
+        {{ range . }}
+            {{- .ConstName}},
+        {{ end }}
+    {{- end }}
+        {{- if .CreatedAt}}
+            {{.CreatedAt.ConstName}},
+        {{- end}}
+        {{- if .UpdatedAt}}
+            {{.UpdatedAt.ConstName}},
+        {{- end}}
+
+
+    ).
+    From({{.ConstName}}).
+    Offset(uint64(offset)).
+    Limit(uint64(limit)).
+    OrderBy(fmt.Sprintf("%s DESC", {{.ID.ConstName}})).
+    PlaceholderFormat(sq.Dollar)
+
+    query, args, err := builder.ToSql()
+    if err != nil {
+    return nil, err
+    }
+    rows := make([]{{.ModelType}}, 0, limit)
+    err = r.dbx.SelectContext(ctx, &rows, query, args...)
+    if err != nil {
+    return nil, err
+    }
+
+    return rows, nil
+    }
+{{end}}
